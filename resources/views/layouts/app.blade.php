@@ -12,6 +12,10 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    {{--<link href="{{ asset('css/index.css') }}" rel="stylesheet">--}}
+
+    <!--Dynamic StyleSheets added from a view would be pasted here-->
+    @stack('styles')
 </head>
 <body>
     <div id="app">
@@ -76,5 +80,8 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>
+
+    <!-- Dump all dynamic scripts into template -->
+    @stack('scripts')
 </body>
 </html>
