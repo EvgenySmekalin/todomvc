@@ -39,31 +39,3 @@
 @push('scripts')
     <script src=" {{ asset('js/index.js') }}"></script>
 @endpush
-
-<script id="todo-template" type="text/x-custom-template">
-    <li class="completed" data-id="">
-        <div class="view">
-            <input class="toggle" type="checkbox" checked>
-            <label></label>
-            <button class="destroy"></button>
-        </div>
-        <input class="edit" value="">
-    </li>
-</script>
-<script id="footer-template" type="text/x-custom-template">
-    <span id="todo-count"><strong></strong>  left</span>
-    <ul id="filters">
-        <li>
-            <a class="selected" href="#/all">All</a>
-        </li>
-        <li>
-            <a class="selected"href="#/active">Active</a>
-        </li>
-        <li>
-            <a class="selected"href="#/completed">Completed</a>
-        </li>
-    </ul>
-    <button id="clear-completed">Clear completed</button>
-</script>
-
-

@@ -36,8 +36,8 @@ jQuery(function ($) {
     var App = {
         init: function () {
             this.todos = util.store('todos-jquery');
-            this.footerTemplate = $('#footer-template').html();
             this.bindEvents();
+            this.render();
 
             // new Router({
             //     '/:filter': function (filter) {
@@ -59,7 +59,7 @@ jQuery(function ($) {
         },
         render: function () {
             var todos = this.getFilteredTodos();
-            $('#todo-list').html(this.todoTemplate(todos));
+            this.todoTemplate(todos);
             $('#main').toggle(todos.length > 0);
             $('#toggle-all').prop('checked', this.getActiveTodos().length === 0);
             this.renderFooter();
@@ -69,37 +69,33 @@ jQuery(function ($) {
         renderFooter: function () {
             var todoCount = this.todos.length;
             var activeTodoCount = this.getActiveTodos().length;
-            var template = this.footerTemplate({
-                activeTodoCount: activeTodoCount,
-                activeTodoWord: util.pluralize(activeTodoCount, 'item'),
-                completedTodos: todoCount - activeTodoCount,
-                filter: this.filter
-            });
+
+            var activeTodoWord = util.pluralize(activeTodoCount, 'item');
+            var completedTodos = todoCount - activeTodoCount;
+            var filter = this.filter;
+
+            var template = '<span id="todo-count"><strong>' + activeTodoCount +'</strong> ' + activeTodoWord + ' left</span>\n' +
+                           '<ul id="filters">\n' +
+                           '    <li><a ' + (filter === "all" ? "class=\"selected\"" : "") + ' href="#/all">All</a></li>\n' +
+                           '    <li><a ' + (filter === "active" ? "class=\"selected\"" : "") + 'href="#/active">Active</a></li>\n' +
+                           '    <li><a ' + (filter === "completed" ? "class=\"selected\"" : "") + 'href="#/completed">Completed</a></li>\n' +
+                           '</ul>\n' + (completedTodos ? '<button id="clear-completed">Clear completed</button>\n' : '');
 
             $('#footer').toggle(todoCount > 0).html(template);
         },
-
         todoTemplate: function (todos) {
-            var todoList = '';
-            todos.forEach(function(listItem) {
-                var li = $( "li" );
-                li.attr('data-id', listItem.id);
-                if (listItem.completed) {
-                    li.addClass('completed');
-                }
-                li.append("<div class=\"view\">\n" +
-                          "    <input class=\"toggle\" type=\"checkbox\" " + listItem.completed ? 'checked' : '' + ">\n" +
-                          "    <label>" + listItem.title + "</label>\n" +
-                          "    <button class=\"destroy\"></button>\n" +
-                          "</div>");
-                console.log(li.html());
-                todoList += li;
-            });
-            return todoList;
-        },
-        listItemTemplate: function (listItem) {
-
-            return li;
+            var todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            for (var i = 0; i < todos.length; i++) {
+                todoList.innerHTML += '<li class="' + (todos[i].completed ? "completed" : "") + '" data-id="' + todos[i].id + '">\n' +
+                                      '    <div class="view">\n' +
+                                      '        <input class="toggle" type="checkbox" ' + (todos[i].completed ? "checked" : "") + '>\n' +
+                                      '        <label>' + todos[i].title + '</label>\n' +
+                                      '        <button class="destroy"></button>\n' +
+                                      '    </div>\n' +
+                                      '    <input class="edit" value="' + todos[i].title + '">\n' +
+                                      '</li>';
+            }
         },
         toggleAll: function (e) {
             var isChecked = $(e.target).prop('checked');
