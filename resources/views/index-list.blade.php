@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-
+    <input type="hidden" id="list-id" name="list-id" value="{{ $id }}">
 @endsection
 
 <script>

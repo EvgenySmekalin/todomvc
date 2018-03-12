@@ -15,11 +15,8 @@ class CreateListsTable extends Migration
     {
         Schema::create('lists', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('author_id');
             $table->unsignedInteger('user_id');
-            $table->string('title');
-            $table->enum('access_level', ['reed', 'edit', 'owner']);
-            $table->timestamps();
+            $table->string('name');
         });
     }
 

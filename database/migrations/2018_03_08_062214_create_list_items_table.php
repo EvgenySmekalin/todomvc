@@ -14,8 +14,10 @@ class CreateListItemsTable extends Migration
     public function up()
     {
         Schema::create('list_items', function (Blueprint $table) {
+            $table->increments('id');
             $table->unsignedInteger('list_id');
-            $table->text('content');
+            $table->text('title');
+            $table->boolean('completed');
         });
     }
 

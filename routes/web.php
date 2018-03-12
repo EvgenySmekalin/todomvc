@@ -18,6 +18,14 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/list', 'ListController@list');
+
 Route::post('/list', 'ListController@create');
+Route::post('/edit/{id}/list', 'ListController@create');
+
 Route::delete('/list', 'ListController@delete');
+Route::delete('/edit/{id}/list', 'ListController@delete');
+
 Route::patch('/list', 'ListController@patch');
+Route::patch('/edit/{id}/list', 'ListController@patch');
+
+Route::get('/edit/{id}/{filter}', 'HomeController@userList');

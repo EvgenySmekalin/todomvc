@@ -18,9 +18,17 @@ jQuery(function ($) {
         init: function () {
             this.todos = Object.values(TODOS_LIST);
             this.todoList = document.getElementById('todo-list');
+            this.listId = document.getElementById('list-id').value;
+            this.filter = this.getFilter();
             this.render();
             this.bindEvents();
             this.setStartId();
+        },
+        getFilter: function () {
+            var parser = document.createElement('a');
+            parser.href = window.location.href;
+            var pathnameArray = parser.pathname.split("/");
+            return pathnameArray[pathnameArray.length - 1];
         },
         setStartId: function () {
             if (this.todos.length > 0) {
@@ -39,7 +47,7 @@ jQuery(function ($) {
                 .on('click', '.destroy', this.destroy.bind(this));
         },
         render: function () {
-            var todos = this.getFilteredTodos();
+            var todos = this.todos;
             this.todoTemplate(todos);
             this.renderFooter();
             $('#main').toggle(todos.length > 0);
@@ -53,9 +61,9 @@ jQuery(function ($) {
             var completedTodos  = todoCount - activeTodoCount;
             var template = '<span id="todo-count"><strong>' + activeTodoCount +'</strong> ' + activeTodoWord + ' left</span>\n' +
                            '<ul id="filters">\n' +
-                           '    <li><a ' + (this.filter === "all" ? "class=\"selected\"" : "") + ' href="#/all">All</a></li>\n' +
-                           '    <li><a ' + (this.filter === "active" ? "class=\"selected\"" : "") + 'href="#/active">Active</a></li>\n' +
-                           '    <li><a ' + (this.filter === "completed" ? "class=\"selected\"" : "") + 'href="#/completed">Completed</a></li>\n' +
+                           '    <li><a ' + (this.filter === "all" ? "class=\"selected\"" : "") + ' href="all">All</a></li>\n' +
+                           '    <li><a ' + (this.filter === "active" ? "class=\"selected\"" : "") + 'href="active">Active</a></li>\n' +
+                           '    <li><a ' + (this.filter === "completed" ? "class=\"selected\"" : "") + 'href="completed">Completed</a></li>\n' +
                            '</ul>\n' + (completedTodos ? '<button id="clear-completed">Clear completed</button>\n' : '');
 
             $('#footer').toggle(todoCount > 0).html(template);
@@ -87,22 +95,6 @@ jQuery(function ($) {
                 return !todo.completed;
             });
         },
-        getCompletedTodos: function () {
-            return this.todos.filter(function (todo) {
-                return todo.completed;
-            });
-        },
-        getFilteredTodos: function () {
-            if (this.filter === 'active') {
-                return this.getActiveTodos();
-            }
-
-            if (this.filter === 'completed') {
-                return this.getCompletedTodos();
-            }
-
-            return this.todos;
-        },
         destroyCompleted: function () {
             this.todos = this.getActiveTodos();
             this.filter = 'all';
@@ -132,7 +124,8 @@ jQuery(function ($) {
             var newItem = {
                 id: util.uuid(),
                 title: val,
-                completed: false
+                completed: false,
+                list_id: this.listId
             };
 
             axios.post('list', newItem
@@ -145,9 +138,13 @@ jQuery(function ($) {
             });
         },
         toggle: function (e) {
-            var id = this.getIndexFromEl(e.target);
-            axios.patch('list', {'id': id, 'completed': 'toggle'}
-            ).then( () => {
+            axios.patch('list',
+            {
+                'id': $(e.target).closest('li').data('id'),
+                'completed': 'toggle',
+                list_id: this.listId
+            }).then( () => {
+                var id = this.getIndexFromEl(e.target);
                 this.todos[id].completed = !this.todos[id].completed;
                 this.render();
             }).catch( (error) => {
@@ -180,9 +177,12 @@ jQuery(function ($) {
             if ($el.data('abort')) {
                 $el.data('abort', false);
             } else {
-                var id = this.getIndexFromEl(el);
-                axios.patch('list', {'id': id, 'title': val}
-                ).then( () => {
+                axios.patch('list', {
+                    'id': $(e.target).closest('li').data('id'),
+                    'title': val,
+                    list_id: this.listId
+                }).then( () => {
+                    var id = this.getIndexFromEl(el);
                     this.todos[id].title = val;
                     this.render();
                 }).catch( (error) => {
@@ -191,13 +191,13 @@ jQuery(function ($) {
             }
         },
         destroy: function (e) {
-            var id= this.getIndexFromEl(e.target);
             axios({
                 method: 'delete',
                 url: 'list',
-                data: {'id': id},
+                data: {'id': $(e.target).closest('li').data('id'), list_id: this.listId},
                 headers: {'Content-Type': 'application/json'}
             }).then( () => {
+                var id= this.getIndexFromEl(e.target);
                 this.todos.splice(id, 1);
                 this.render();
             }).catch( (error) => {

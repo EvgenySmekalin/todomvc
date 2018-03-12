@@ -4,19 +4,16 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">Dashboard</div>
-
-                <div class="panel-body">
-                    @if (session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    You are logged in!
+            <h3>User's lists</h3>
+            @if (empty($userLists))
+                <p>No any lists</p>
+            @else
+                <div class="list-group">
+                @foreach ($userLists as $userList)
+                    <a href="{{ url('edit') . '/'. $userList->id . '/all' }}" class="list-group-item">{{ $userList->name }}</a>
+                @endforeach
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>
