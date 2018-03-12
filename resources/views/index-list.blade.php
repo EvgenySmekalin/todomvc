@@ -35,6 +35,10 @@
 
 @endsection
 
+<script>
+    var TODOS_LIST = {!! json_encode($list) !!};
+</script>
+
 <!-- Push a script dynamically from a view -->
 @push('scripts')
     <script src=" {{ asset('js/index.js') }}"></script>
