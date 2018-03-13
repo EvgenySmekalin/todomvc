@@ -7,26 +7,43 @@
  */
 
 namespace App\Http\Controllers;
+use App\Models\Lists;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ListItem;
 
 class ListController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, $filter = null)
     {
         $list = $request->session()->get('list', []);
+
+        if ($filter === 'completed') {
+            foreach ($list as $key => $listItem) {
+                if (!$listItem['completed']) {
+                    unset($list[$key]);
+                }
+            }
+        }
+
+        if ($filter === 'active') {
+            foreach ($list as $key => $listItem) {
+                if ($listItem['completed']) {
+                    unset($list[$key]);
+                }
+            }
+        }
+
         return view('index-list', ['list' => $list, 'id' => 0]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request, $listId = null)
     {
         if (!$request->ajax()) {
-            redirect('/');
+            redirect()->route('/');
         }
 
         $id = $request->input('id');
-        $listId = (int)$request->input('list_id');
         $insert = [
             'title'     => $request->input('title'),
             'id'        => $id,
@@ -42,13 +59,12 @@ class ListController extends Controller
         return response()->json(['msg'=> 'OK'], 200);
     }
 
-    public function delete(Request $request)
+    public function delete(Request $request, $listId = null)
     {
         if (!$request->ajax()) {
-            redirect('/');
+            redirect()->route('/');
         }
 
-        $listId = (int)$request->input('list_id');
         $id     = $request->input('id');
 
         if ($listId) {
@@ -60,13 +76,12 @@ class ListController extends Controller
         return response()->json(['msg'=> 'OK'], 200);
     }
 
-    public function patch(Request $request)
+    public function patch(Request $request, $listId = null)
     {
         if (!$request->ajax()) {
-            redirect('/');
+            redirect()->route('/');
         }
 
-        $listId = (int)$request->input('list_id');
         $title     = $request->input('title');
         $completed = $request->input('completed');
         $id        = $request->input('id');
@@ -115,6 +130,67 @@ class ListController extends Controller
         }
 
         $request->session()->put('list.' . $id, $value);
+        return response()->json(['msg'=> 'OK'], 200);
+    }
+
+    public function toggleAll(Request $request, $listId = null)
+    {
+        if (!$request->ajax()) {
+            redirect()->route('/');
+        }
+
+        $checked = $request->input('checked');
+
+        if ($listId) {
+            $listItems = ListItem::where('list_id', $listId)->get();
+
+            foreach ($listItems as $listItem) {
+                $listItem->completed = $checked;
+                $listItem->update();
+            }
+        } else {
+            $list = $request->session()->pull('list');
+
+            foreach ($list as &$listItem) {
+                $listItem['completed'] = $checked;
+            }
+            unset($listItem);
+
+            $request->session()->put('list', $list);
+        }
+
+        return response()->json(['msg'=> 'OK'], 200);
+    }
+
+    public function clearCompleted(Request $request, $listId = null)
+    {
+        if (!$request->ajax()) {
+            redirect()->route('/');
+        }
+
+        $activeTodos = $request->input('activeTodos');
+        $actveIds = [];
+        foreach ($activeTodos as $activeTodo) {
+            $actveIds[] = $activeTodo['id'];
+        }
+
+        if ($listId) {
+            $listItems = ListItem::where('list_id', $listId)->get();
+            foreach ($listItems as $listItem) {
+                if (!in_array($listItem->id, $actveIds)) {
+                    $listItem->delete();
+                }
+            }
+        } else {
+            $list = $request->session()->pull('list');
+            foreach ($list as $key => $listItem) {
+                if (!in_array($listItem['id'], $actveIds)) {
+                    unset($list[$key]);
+                }
+            }
+            $request->session()->put('list', $list);
+        }
+
         return response()->json(['msg'=> 'OK'], 200);
     }
 }

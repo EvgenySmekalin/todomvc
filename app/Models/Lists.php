@@ -45,6 +45,14 @@ class Lists extends Model
         $this->save();
     }
 
+    public function newListWithName($name)
+    {
+        $user = Auth::user();
+        $this->user_id = $user->id;
+        $this->name    = $name;
+        $this->save();
+    }
+
     public static function getUserLists()
     {
         return self::where('user_id', Auth::id())

@@ -11,14 +11,13 @@ jQuery(function ($) {
         },
         pluralize: function (count, word) {
             return count === 1 ? word : word + 's';
-        },
+        }
     };
 
     var App = {
         init: function () {
             this.todos = Object.values(TODOS_LIST);
             this.todoList = document.getElementById('todo-list');
-            this.listId = document.getElementById('list-id').value;
             this.filter = this.getFilter();
             this.render();
             this.bindEvents();
@@ -82,13 +81,18 @@ jQuery(function ($) {
             }
         },
         toggleAll: function (e) {
-            var isChecked = $(e.target).prop('checked');
-
-            this.todos.forEach(function (todo) {
-                todo.completed = isChecked;
+            axios.post('toggle-all', {'checked' : $(e.target).prop('checked')}
+            ).then( () => {
+                var isChecked = $(e.target).prop('checked');
+                this.todos.forEach(function (todo) {
+                    todo.completed = isChecked;
+                });
+                this.render();
+            $input.val('');
+                this.render();
+            }).catch( (error) => {
+               console.log(error.response.data);
             });
-
-            this.render();
         },
         getActiveTodos: function () {
             return this.todos.filter(function (todo) {
@@ -96,9 +100,14 @@ jQuery(function ($) {
             });
         },
         destroyCompleted: function () {
-            this.todos = this.getActiveTodos();
-            this.filter = 'all';
-            this.render();
+            axios.post('clear-completed', {'activeTodos': this.getActiveTodos()}
+            ).then( () => {
+                this.todos = this.getActiveTodos();
+                this.filter = 'all';
+                this.render();
+            }).catch( (error) => {
+                console.log(error.response.data);
+            });
         },
         // accepts an element from inside the `.item` div and
         // returns the corresponding index in the `todos` array
@@ -124,8 +133,7 @@ jQuery(function ($) {
             var newItem = {
                 id: util.uuid(),
                 title: val,
-                completed: false,
-                list_id: this.listId
+                completed: false
             };
 
             axios.post('list', newItem
@@ -141,8 +149,7 @@ jQuery(function ($) {
             axios.patch('list',
             {
                 'id': $(e.target).closest('li').data('id'),
-                'completed': 'toggle',
-                list_id: this.listId
+                'completed': 'toggle'
             }).then( () => {
                 var id = this.getIndexFromEl(e.target);
                 this.todos[id].completed = !this.todos[id].completed;
@@ -179,8 +186,7 @@ jQuery(function ($) {
             } else {
                 axios.patch('list', {
                     'id': $(e.target).closest('li').data('id'),
-                    'title': val,
-                    list_id: this.listId
+                    'title': val
                 }).then( () => {
                     var id = this.getIndexFromEl(el);
                     this.todos[id].title = val;
@@ -194,7 +200,7 @@ jQuery(function ($) {
             axios({
                 method: 'delete',
                 url: 'list',
-                data: {'id': $(e.target).closest('li').data('id'), list_id: this.listId},
+                data: {'id': $(e.target).closest('li').data('id')},
                 headers: {'Content-Type': 'application/json'}
             }).then( () => {
                 var id= this.getIndexFromEl(e.target);

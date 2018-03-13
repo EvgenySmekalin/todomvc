@@ -32,11 +32,11 @@
                     </button>
 
                     <!-- Branding Image -->
-                    <a class="navbar-brand" href="{{ url('/') }}">
+                    <a class="navbar-brand" href="{{ route('/') }}">
                         {{ config('app.name', 'Laravel') }}
                     </a>
                     @auth
-                       <a class="navbar-brand" href="{{ route('home') }}">Home</a>
+                       <a class="navbar-brand" href="{{ route('home') }}">My Lists</a>
                     @endauth
                 </div>
 

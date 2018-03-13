@@ -11,21 +11,32 @@
 |
 */
 
-Route::get('/', 'ListController@index');
-
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('todomvc/{filter?}', 'ListController@index');
+Route::get('/todomvc', 'ListController@index')->name('/');
 
-Route::get('/list', 'ListController@list');
 
-Route::post('/list', 'ListController@create');
-Route::post('/edit/{id}/list', 'ListController@create');
+Route::get('todomvc/list', 'ListController@list');
+Route::post('todomvc/list', 'ListController@create');
+Route::delete('todomvc/list', 'ListController@delete');
+Route::patch('todomvc/list', 'ListController@patch');
+Route::post('todomvc/toggle-all', 'ListController@toggleAll');
+Route::post('todomvc/clear-completed', 'ListController@clearCompleted');
 
-Route::delete('/list', 'ListController@delete');
-Route::delete('/edit/{id}/list', 'ListController@delete');
+Route::group(['middleware' => 'auth'], function() {
+    Route::get('/change-name', 'HomeController@changeName');
+    Route::get('/delete-list', 'HomeController@deleteList');
+    Route::get('/add-list',     'HomeController@addList');
 
-Route::patch('/list', 'ListController@patch');
-Route::patch('/edit/{id}/list', 'ListController@patch');
+    Route::patch('/edit/{listId}/list',    'ListController@patch');
+    Route::delete('/edit/{listId}/list',   'ListController@delete');
+    Route::post('/edit/{listId}/list',     'ListController@create');
+    Route::post('/edit/{listId}/toggle-all',      'ListController@toggleAll');
+    Route::post('/edit/{listId}/clear-completed', 'ListController@clearCompleted');
 
-Route::get('/edit/{id}/{filter}', 'HomeController@userList');
+
+    Route::get('/edit/{id}/{filter}', 'HomeController@userList');
+
+    Route::get('/home', 'HomeController@index')->name('home');
+});
