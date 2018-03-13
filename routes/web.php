@@ -16,6 +16,9 @@ Auth::routes();
 Route::get('todomvc/{filter?}', 'ListController@index');
 Route::get('/todomvc', 'ListController@index')->name('/');
 
+Route::get('/', function () {
+    return redirect()->route('/');
+});
 
 Route::get('todomvc/list', 'ListController@list');
 Route::post('todomvc/list', 'ListController@create');
